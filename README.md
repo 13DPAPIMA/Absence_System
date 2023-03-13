@@ -10,10 +10,8 @@ dlkfhjdyhfdfjs
 
 # Project Requierements
 
-- [] The program must meet all the requirements
-- [] The program should run without errors
-- [] The program must have a transparent user interface (the interface can be Latvian or English
-language)
-- [] The report should cover all the above points
-- [] The report must be prepared according to the requirements
-- [] Binary (or text) files must be given and written to the object
+ -The programme must be error-free
+ -The program must have a clear user interface
+ -The report should include all these points
+ -Report to be prepared in accordance with the requirements
+ -Object data must be recorded in binary (or text) files
