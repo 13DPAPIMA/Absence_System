@@ -6,7 +6,11 @@
 
 # Description
 
-dlkfhjdyhfdfjs
+The project is part of the subject "System Programming".
+
+The main task of the project is to create a console application that will allow you to store and process information about a specific subject area.
+
+During the project, it is necessary to develop a console application that will work with several objects and multiple files that interact with each other.
 
 # Project Requierements
 
