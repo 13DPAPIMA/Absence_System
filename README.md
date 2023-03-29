@@ -1,8 +1,8 @@
 # Skolēnu kavējumu sistēma (Grupu darbs)
 
 # Created by 
-- Jevgenijs Kurševs
-- Artjoms Pimanovs
+- **Jevgenijs Kurševs**
+- **Artjoms Pimanovs**
 
 # Description
 
