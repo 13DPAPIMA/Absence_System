@@ -1,4 +1,4 @@
-# Skolēnu kavējumu sistēma (Grupu darbs)
+# School Absence System (School project)
 
 # Created by 
 - **Jevgenijs Kurševs**
