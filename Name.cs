@@ -1,6 +1,8 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 class Name : AbsenceSystem
 {
@@ -12,51 +14,39 @@ class Name : AbsenceSystem
     public void Input()
     {
         Regex regex = new Regex(@"^[a-zA-Z\-]+$");
-        // паттерн который разрешен (разрешено только буквы и "-") 
-        // паттерн который должен совпадать с входной строкой.
-        // я так и до конца не понял как работает этот Regex , но на stackoverflow пишут , что он useless :D
-
-        Console.Write("\nIf you have double name use " + "-\n");
+    
+        Console.Write("If you have double name use " + "-\n");
         
-        Console.WriteLine("\nInput students firstname: ");
-        FirstName = Console.ReadLine();
-
-        if (FirstName.Contains(" "))
+        do
         {
-            FirstName = FirstName.Replace(" ", ""); // удаляем все пробелы из строки
-        }
+            Console.Write("\nYou can only input letters and hyphens!\n");
+            Console.WriteLine("\nInput students firstname");
+             
+            FirstName = Console.ReadLine().Trim();
+        } while (!regex.IsMatch(FirstName));
 
-        if (!regex.IsMatch(FirstName)) // если не совпадает с паттерном то...
+        do
         {
-            Console.WriteLine("\nYou can only type in letters and hyphens!");
-            Environment.Exit(1); // если введено чтото кроме букв и "-" то exit
-        }
+            Console.Write("\nYou can only input letters and hyphens!\n");
+            Console.WriteLine("\nInput students lastname");
+            LastName = Console.ReadLine().Trim();
+        } while (!regex.IsMatch(LastName));
 
-        Console.WriteLine("\nInput students lastname");
-        LastName = Console.ReadLine();
-
-        if (LastName.Contains(" "))
-        {
-            LastName = LastName.Replace(" ", "");  // удаляем все пробелы из строки
-        }
-
-        if (!regex.IsMatch(LastName))
-        {
-            Console.WriteLine("\nYou can only type in letters and hyphens!");
-            Environment.Exit(1);
-        }
     }
-
 
     public override void WriteText()
     {
-        int auto_increment;
+        int max_increment = 0;
+        int auto_increment = 0;
         string last_line = null;
+        string lineWithMaxIncrement = null;
 
         Input();
 
         if (File.Exists(Path))
         {
+            string[] lines = File.ReadAllLines(Path);
+
             using (StreamReader r = new StreamReader(Path))
             {
                 while (!r.EndOfStream)
@@ -71,7 +61,30 @@ class Name : AbsenceSystem
             }
             else
             {
-                auto_increment = int.Parse(last_line.Split('.')[0]) + 1;
+                try
+                {
+                    foreach (string line in lines)
+                    {
+
+                        auto_increment = Convert.ToInt32(line.Split(". ")[0]);
+
+                        if (auto_increment > max_increment)
+                        {
+                            max_increment = auto_increment;
+                            lineWithMaxIncrement = line;
+                        }
+                    }
+
+                    if (lineWithMaxIncrement != null)
+                    {
+                        auto_increment = max_increment + 1;
+                    }
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("Invalid input. Auto increment set to 1 by default.");
+                    auto_increment = 1;
+                }
             }
 
             using (StreamWriter w = File.AppendText(Path))
@@ -79,7 +92,7 @@ class Name : AbsenceSystem
                 w.WriteLineAsync($"{auto_increment++}. {FirstName} {LastName}");
             }
         }
-        else { Console.WriteLine("Error"); }
+        else { Console.WriteLine("\nError! This file doesn't exist"); }
     }
 
     public override void ReadFile()
@@ -91,8 +104,73 @@ class Name : AbsenceSystem
     {
         base.DeleteText();
     }
+
+    public override void Filter()
+    {
+        base.Filter();
+    }
+
+    public override void Sorting()
+    {
+        Console.Clear();
+        Console.WriteLine("Choose option: \n");
+        Console.WriteLine("[1] Sort from A to Z");
+        Console.WriteLine("[2] Sort from Z to A");
+        ConsoleKeyInfo option = Console.ReadKey();
+        Console.Clear();
+
+        switch (option.KeyChar)
+        {
+            case '1':
+                List<string> lines = new List<string>(File.ReadAllLines(Path));
+                Dictionary<int, string> data = new Dictionary<int, string>();
+
+                foreach (string line in lines)
+                {
+                    int incrementEndIndex = line.IndexOf(".");
+                    int increment = int.Parse(line.Substring(0, incrementEndIndex));
+
+                    string nameSurname = line.Substring(incrementEndIndex + 2);
+                    data.Add(increment, nameSurname);
+                }
+
+                List<string> sortedLines = new List<string>();
+
+                foreach (KeyValuePair<int, string> entry in data.OrderBy(x => x.Value))
+                {
+                    sortedLines.Add($"{entry.Key}. {entry.Value}");
+                }
+
+                File.WriteAllLines(Path, sortedLines);
+                Console.WriteLine("Sorted!");
+                break;
+
+            case '2':
+                lines = new List<string>(File.ReadAllLines(Path));
+                data = new Dictionary<int, string>();
+
+                foreach (string line in lines)
+                {
+                    int incrementEndIndex = line.IndexOf(".");
+                    int increment = int.Parse(line.Substring(0, incrementEndIndex));
+
+                    string nameSurname = line.Substring(incrementEndIndex + 2);
+                    data.Add(increment, nameSurname);
+                }
+
+                sortedLines = new List<string>();
+
+                foreach (KeyValuePair<int, string> entry in data.OrderByDescending(x => x.Value))
+                {
+                    sortedLines.Add($"{entry.Key}. {entry.Value}");
+                }
+
+                File.WriteAllLines(Path, sortedLines);
+                Console.WriteLine("Sorted!");
+                break;
+
+        }
+    }
+
+
 }
-
-
-
-// int space_index1 = LastName.IndexOf(" ");  // находим индекс первого пробела
