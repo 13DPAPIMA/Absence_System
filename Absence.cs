@@ -1,126 +1,188 @@
 using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 
-public class Program
+class Absence : AbsenceSystem
 {
-    public static void CapyBara()
-    {
-        Console.ForegroundColor = ConsoleColor.DarkYellow;
-        string Capy = @"
-        ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⣄⢘⣒⣀⣀⣀⣀⠀⠀⠀
-        ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣽⣿⣛⠛⢛⣿⣿⡿⠟⠂⠀
-        ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣀⣀⡀⠀⣤⣾⣿⣿⣿⣿⣿⣿⣿⣷⣿⡆⠀
-        ⠀⠀⠀⠀⠀⠀⣀⣤⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⠀
-        ⠀⠀⠀⢀⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀
-        ⠀⠀⣠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀
-        ⠀⠀⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠜⠀⠀⠀⠀⠀⠀⠀
-        ⠀⠀⠀⢿⣿⣿⣿⣿⠿⠿⣿⣿⡿⢿⣿⣿⠈⣿⣿⣿⡏⣠⡴⠀⠀⠀⠀⠀⠀⠀
-        ⠀⠀⣠⣿⣿⣿⡿⢁⣴⣶⣄⠀⠀⠉⠉⠉⠀⢻⣿⡿⢰⣿⡇⠀⠀⠀⠀⠀⠀⠀
-        ⠀⠀⢿⣿⠟⠋⠀⠈⠛⣿⣿⠀⠀⠀⠀⠀⠀⠸⣿⡇⢸⣿⡇⠀⠀⠀⠀⠀⠀⠀
-        ⠀⠀⢸⣿⠀⠀⠀⠀⠀⠘⠿⠆⠀⠀⠀⠀⠀⠀⣿⡇⠀⠿⠇⠀⠀⠀⠀⠀⠀⠀
-                     zena
-                    artjom
-        ";
-        Console.Write(Capy);
-    }
-    
-    /// <summary>
-    /// Console file choice
-    /// </summary>
-    public static void FileChoice() 
-    {
-        Absence absence = new Absence(Path: "Absence.txt");
-        Name name = new Name(Path: "Name.txt");
-        Lessons lessons = new Lessons(Path: "Lessons.txt");
-        
-        Console.ForegroundColor = ConsoleColor.White;
-        string[] PathList = {"Name.txt", "Lessons.txt", "Absence.txt"};
-        
-        Console.WriteLine("\n================ File select ==================\n");
-        
-        Console.WriteLine("[1] Name.txt");
-        Console.WriteLine("[2] Lessons.txt");
-        Console.WriteLine("[3] Absence.txt");
-        Console.WriteLine("\nPlease select a file to work with: \n");
+    public Absence(string Path) : base(Path) { }
 
-        ConsoleKeyInfo option = Console.ReadKey();
-        Console.Clear();
-        
-        switch (option.KeyChar)
+    public override void WriteText()
+    {
+        int? absences = null;
+
+        Console.Write("Input absence count: ");
+        string abscense_count = Console.ReadLine();
+        Console.Write("\n\nIf student has 0 abscenses keep empty input");
+
+        if (!string.IsNullOrEmpty(abscense_count))
+        {
+            absences = Convert.ToInt32(abscense_count);
+        }
+
+        int max_increment = 0;
+        int auto_increment = 0;
+        string last_line = null;
+        string lineWithMaxIncrement = null;
+
+        if (File.Exists(Path))
+        {
+            string[] lines = File.ReadAllLines(Path);
+
+            using (StreamReader r = new StreamReader(Path))
+            {
+                while (!r.EndOfStream)
+                {
+                    last_line = r.ReadLine();
+                }
+            }
+
+            if (string.IsNullOrEmpty(last_line))
+            {
+                auto_increment = 1;
+            }
+            else
+            {
+                try
+                {
+                    foreach (string line in lines)
+                    {
+                        auto_increment = Convert.ToInt32(line.Split(". ")[0]);
+
+                        if (auto_increment > max_increment)
+                        {
+                            max_increment = auto_increment;
+                            lineWithMaxIncrement = line;
+                        }
+                    }
+                    if (lineWithMaxIncrement != null)
+                    {
+                        auto_increment = max_increment + 1;
+                    }
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("Invalid input. Auto increment set to 1 by default.");
+                    auto_increment = 1;
+                }
+            }
+            using (StreamWriter w = File.AppendText(Path))
+            {
+                w.WriteLineAsync($"{auto_increment++}. {absences ?? 0}");
+            }
+        }
+        else { Console.WriteLine("\nError! This file doesn't exist"); }
+    }
+
+    public override void Sorting()
+    {
+        Dictionary<int, int> savedLines = new Dictionary<int, int>();
+
+        Console.Write("\n[1] Sort abences from lower to higher\n");
+        Console.Write("[2] Sort abences from higher to lower\n");
+        ConsoleKeyInfo settings = Console.ReadKey();
+
+        switch (settings.KeyChar)
         {
             case '1':
-                Interface(name);
+                using (StreamReader reader = new StreamReader(Path))
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        string lineTxt = reader.ReadLine();
+                        string increment;
+
+                        increment = lineTxt.Split(".")[0];
+                        string numbers = lineTxt.Split(". ")[1];
+                        savedLines.Add(int.Parse(increment), int.Parse(numbers));
+                    }
+                    using (StreamWriter writer = new StreamWriter(Path))
+                    {
+                        foreach (KeyValuePair<int, int> line in savedLines.OrderBy(key => key.Value))
+                        {
+                            writer.WriteLine(line.Key + ". " + line.Value);
+                        }
+                    }
+                }
+                Console.Clear();
+                break;
+
+            case '2':
+                using (StreamReader reader = new StreamReader(Path))
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        string lineTxt = reader.ReadLine();
+                        string increment;
+
+                        increment = lineTxt.Split(".")[0];
+                        string numbers = lineTxt.Split(". ")[1];
+                        savedLines.Add(int.Parse(increment), int.Parse(numbers));
+                    }
+                    using (StreamWriter writer = new StreamWriter(Path))
+                    {
+                        foreach (KeyValuePair<int, int> line in savedLines.OrderByDescending(x => x.Value))
+                        {
+                            writer.WriteLine(line.Key + ". " + line.Value);
+                        }
+                    }
+                    Console.Clear();
+                    break;
+                }
+        }
+    }
+
+    public override void ReadFile()
+    {
+        base.ReadFile();
+        Console.WriteLine("\n\nPress any key to continue.");
+    }
+
+    public override void DeleteText()
+    {
+        Console.WriteLine("[1] Delete all text\n[2] Delete specific\n[3] Back");
+        ConsoleKeyInfo key = Console.ReadKey();
+
+        switch (key.KeyChar)
+        {
+            case '1':
+                base.DeleteText();
                 break;
             case '2':
-                Interface(lessons);
+                base.DeleteSpecific();
                 break;
             case '3':
-                Interface(absence);
+                Program.FileChoice();
                 break;
             default:
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Wrong option");
+                Console.WriteLine("Wrong input, try again!\n");
+                DeleteText();
                 break;
         }
     }
-    
-    /// <summary>
-    /// Console Interface for <c>users</c>
-    /// </summary>
-    public static void Interface(AbsenceSystem absenceSystem)
+
+    public override void Filter()
     {
-        Console.ForegroundColor = ConsoleColor.White;
-        Console.WriteLine("\n================ Absence System ================\n");
-        Console.WriteLine("\nPlease select an option: \n");
-        Console.WriteLine("[0] Change file");
-        Console.WriteLine("[1] Read file");
-        Console.WriteLine("[2] Write text");
-        Console.WriteLine("[3] Delete text");
-        Console.WriteLine("[4] Filter and searching");
-        Console.WriteLine("[5] Exit\n");
+        base.Filter();
+    }
 
-        ConsoleKeyInfo option = Console.ReadKey();
-        Console.Clear();
+    public static int Summary()
+    {
+        Dictionary<int, int> savedLines = new Dictionary<int, int>();
 
-        switch (option.KeyChar)
+        using (StreamReader reader = new StreamReader("Absence.txt"))
         {
-            case '0':
-                FileChoice();
-                break;
-            case '1':
-                absenceSystem.ReadFile();
-                Console.ReadKey();
-                break;
-            case '2':
-                absenceSystem.WriteText();
-                Console.Clear();
-                break;
-            case '3':
-                absenceSystem.DeleteText();
-                break;
-            case '4':
-                absenceSystem.Filter();
-                break;
-            case '5':
-                Console.Clear();
-                Console.WriteLine("\n=================== Goodbye! ===================\n");
-                Environment.Exit(1);
-                break;
-            default:
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("\nWrong option");
-                break;
+            while (!reader.EndOfStream)
+            {
+                string lineTxt = reader.ReadLine();
+                string increment;
+
+                increment = lineTxt.Split(".")[0];
+                string numbers = lineTxt.Split(". ")[1];
+                
+                savedLines.Add(int.Parse(increment), int.Parse(numbers));
+            }
         }
+        return savedLines.Sum(x => x.Value);
     }
-
-    public static void Main(string[] args)
-    {
-        CapyBara();
-        do 
-        {
-            FileChoice();
-
-        } while(true);
-            
-    }
-
 }
